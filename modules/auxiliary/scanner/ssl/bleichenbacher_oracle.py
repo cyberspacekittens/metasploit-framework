@@ -9,9 +9,13 @@ import os
 import ssl
 
 # extra modules
-import gmpy2
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
+dependencies_missing = False
+try:
+    import gmpy2
+    from cryptography import x509
+    from cryptography.hazmat.backends import default_backend
+except ImportError:
+    dependencies_missing = True
 
 from metasploit import module
 
@@ -56,7 +60,7 @@ metadata = {
         {'type': 'aka', 'ref': 'ROBOT'},
         {'type': 'aka', 'ref': 'Adaptive chosen-ciphertext attack'}
      ],
-    'type': 'scanner.single',
+    'type': 'single_scanner',
     'options': {
         'rhost': {'type': 'address', 'description': 'The target address', 'required': True, 'default': None},
         'rport': {'type': 'port', 'description': 'The target port', 'required': True, 'default': 443},
@@ -151,6 +155,10 @@ def oracle(target, pms, cke_2nd_prefix, cipher_handshake=ch_def, messageflow=Fal
 
 
 def run(args):
+    if dependencies_missing:
+        module.log("Module dependencies (gmpy2 and cryptography python libraries) missing, cannot continue", level='error')
+        return
+
     target = (args['rhost'], int(args['rport']))
     timeout = float(args['timeout'])
     cipher_handshake = cipher_handshakes[args['cipher_group']]
