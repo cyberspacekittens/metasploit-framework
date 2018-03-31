@@ -1,9 +1,9 @@
 # vim: set noexpandtab:
 
-CC := cl
+CC := clang-cl
 
-CFLAGS  := /nologo
-LDFLAGS := /nologo
+CFLAGS  :=  -m32 /nologo /machine:x86
+LDFLAGS :=  /nologo /machine:x86
 
 PROGRAMS := metsvc.exe metsvc-server.exe
 SCRIPTS := install.bat

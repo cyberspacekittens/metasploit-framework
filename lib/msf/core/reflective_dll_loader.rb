@@ -53,7 +53,7 @@ module Msf::ReflectiveDLLLoader
     offset = nil
 
     pe.exports.entries.each do |e|
-      if e.name =~ /^\S*ReflectiveLoader\S*/
+      if e.name =~ /^\S*KittensLoader\S*/
         offset = pe.rva_to_file_offset(e.rva)
         break
       end

