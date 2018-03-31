@@ -35,7 +35,7 @@ module MetasploitModule
   # extensions to make use of.
   #
   def library_name
-    "metsrv.dll"
+    "kittenSrv.dll"
   end
 
   def library_path
